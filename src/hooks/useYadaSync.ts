@@ -18,6 +18,8 @@ export function useYadaSync(userId: string): {
   const flushingRef = useRef(false);
 
   const flush = useCallback(async () => {
+    // いったん送信しないようにする
+    return;
     if (pendingRef.current <= 0 || flushingRef.current) return;
     flushingRef.current = true;
     const count = pendingRef.current;
