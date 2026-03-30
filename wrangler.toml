@@ -1,0 +1,11 @@
+name = "yada"
+main = "worker/index.ts"
+compatibility_date = "2025-01-01"
+
+[assets]
+directory = "./dist"
+
+[[kv_namespaces]]
+binding = "YADA_KV"
+id = "24dacc18f84645e9a06460829f7d8126"
+preview_id = "de54c434db6446d88e71dc4ce76cf38e"
