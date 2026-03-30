@@ -16,6 +16,9 @@ export function App() {
           <p>
             {userCount}人が{totalCount}回やだと思っています
           </p>
+          <p>
+            <small>（無料分が一瞬で溶けたのでカウント保存は停止中）</small>
+          </p>
         </header>
         <main>
           <YadaButton onClick={increment} />
