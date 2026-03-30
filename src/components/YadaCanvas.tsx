@@ -1,7 +1,8 @@
 import { useEffect, useRef } from "react";
 
 interface Props {
-  totalCount: number;
+  existingCount: number;
+  newCount: number;
 }
 
 interface YadaItem {
@@ -20,21 +21,30 @@ function seededRandom(seed: number): () => number {
   };
 }
 
-const MAX_COUNT = 1000;
-const items: YadaItem[] = (() => {
-  const rand = seededRandom(42);
-  return Array.from({ length: MAX_COUNT }, () => ({
-    xRatio: rand(),
-    yRatio: rand(),
-    size: 12 + rand() * 20,
-    rotation: (rand() - 0.5) * 60,
-    opacity: 0.1 + rand() * 0.3,
-  }));
-})();
+// Lazily-grown pool of pre-generated positions (stable across re-renders)
+const pool: YadaItem[] = [];
 
-export function YadaCanvas({ totalCount }: Props) {
+function getItem(index: number): YadaItem {
+  while (pool.length <= index) {
+    const rand = seededRandom(pool.length * 2654435761 + 1);
+    pool.push({
+      xRatio: rand(),
+      yRatio: rand(),
+      size: 12 + rand() * 20,
+      rotation: (rand() - 0.5) * 60,
+      opacity: 0.1 + rand() * 0.3,
+    });
+  }
+  return pool[index];
+}
+
+const EXISTING_CAP = 1000;
+
+export function YadaCanvas({ existingCount, newCount }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const drawCount = Math.min(totalCount, MAX_COUNT);
+
+  const stableCount = Math.min(existingCount, EXISTING_CAP);
+  const totalDraw = stableCount + newCount;
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -50,8 +60,11 @@ export function YadaCanvas({ totalCount }: Props) {
       const color =
         getComputedStyle(document.documentElement).getPropertyValue("--text").trim() || "#000";
 
-      for (let i = 0; i < drawCount; i++) {
-        const item = items[i];
+      for (let i = 0; i < totalDraw; i++) {
+        // Existing items: indices 0..(stableCount-1)
+        // New items: indices EXISTING_CAP..(EXISTING_CAP+newCount-1)
+        const poolIndex = i < stableCount ? i : EXISTING_CAP + (i - stableCount);
+        const item = getItem(poolIndex);
         const x = item.xRatio * canvas.width;
         const y = item.yRatio * canvas.height;
         ctx.save();
@@ -70,7 +83,7 @@ export function YadaCanvas({ totalCount }: Props) {
     const observer = new ResizeObserver(draw);
     observer.observe(canvas);
     return () => observer.disconnect();
-  }, [drawCount]);
+  }, [stableCount, totalDraw]);
 
   return (
     <canvas

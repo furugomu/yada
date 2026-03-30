@@ -6,11 +6,11 @@ import { getUserId } from "./lib/userId.ts";
 
 export function App() {
   const userId = useMemo(() => getUserId(), []);
-  const { totalCount, userCount, increment } = useYadaSync(userId);
+  const { totalCount, userCount, newCount, increment } = useYadaSync(userId);
 
   return (
     <>
-      <YadaCanvas totalCount={totalCount} />
+      <YadaCanvas existingCount={totalCount - newCount} newCount={newCount} />
       <div id="layout">
         <header>
           <p>

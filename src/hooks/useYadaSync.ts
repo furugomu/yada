@@ -8,6 +8,7 @@ interface Stats {
 export function useYadaSync(userId: string): {
   totalCount: number;
   userCount: number;
+  newCount: number;
   increment: () => void;
 } {
   const [serverStats, setServerStats] = useState<Stats>({ totalCount: 0, userCount: 0 });
@@ -71,6 +72,7 @@ export function useYadaSync(userId: string): {
   return {
     totalCount: serverStats.totalCount + optimisticTotal,
     userCount: serverStats.userCount,
+    newCount: optimisticTotal,
     increment,
   };
 }
